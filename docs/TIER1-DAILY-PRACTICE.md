@@ -1,4 +1,4 @@
-# Tier 1 Daily Practice — Pattern Recognition Rotation
+# Tier 1 Daily Practice Pattern Recognition Rotation
 
 A weekly drill rotation for the **five recurring Tier 1 triage workflows** that make up
 the majority of a real SOC queue. The goal is repetition: run the same workflow enough
@@ -15,21 +15,21 @@ Lab reference:
 - Splunk on macOS host; Universal Forwarder from all three VMs; Wazuh EDR; Sysmon on
   JAMES-VM (EID 1 / 4104 / 22)
 
-The constant across every drill — the three questions:
+The constant across every drill the three questions:
 1. Who is the aggressor, and who is the target?
 2. What is the technique, and did it succeed?
 3. What do I escalate with? (IPs, domains, hashes, users, URIs)
 
 ---
 
-## Monday — Brute Force / Password Spray (T1110) — Linux + Windows
+## Monday — Brute Force / Password Spray (T1110) Linux + Windows
 
 The highest-frequency real alert. Brute force = many attempts on one account; spray =
 few attempts across many accounts. Same triage shape. Drill it on **both** platforms so
 you know how it looks in Linux auth logs and in Windows Security logs — the pattern is
 the same, the evidence differs.
 
-### Linux side (Ubuntu / wazuh-manager, SSH — 192.168.64.12) — VERIFIED WORKING
+### Linux side (Ubuntu / wazuh-manager, SSH - 192.168.64.12) VERIFIED WORKING
 The attack: `hydra` from Kali (192.168.64.15) against SSH on the Ubuntu box.
 Drill convention: **john** = compromise (password `Password123!` is in the wordlist so
 hydra succeeds), **mary** = pure fail (password not in the wordlist).
@@ -89,7 +89,7 @@ index=* host=JAMES-VM sourcetype=WinEventLog:Security EventCode=4625
 >
 > Generating a *fresh, richer* Windows brute force proved constrained, and that
 > constraint is itself a defender's finding worth knowing:
-> - **SMB (445) is open but hardened** — `signing:True` on Win11 Build 26100. hydra and
+> - **SMB (445) is open but hardened** `signing:True` on Win11 Build 26100. hydra and
 >   netexec both time out at the NETBIOS/transport layer; no clean failed-logon
 >   telemetry is produced. Modern Windows resists SMB brute force by design.
 > - **RDP (3389) does not bind** even after enabling the service, firewall rule, and
@@ -124,7 +124,7 @@ dangerous it is and how far it spread.
 5. Verdict: benign, spam, or malicious → escalate + block IOCs.
 
 **Success when:** you can produce a full IOC set and answer "how many users were
-targeted / clicked" — scope is the part juniors forget.
+targeted / clicked" scope is the part juniors forget.
 
 ---
 
@@ -134,7 +134,7 @@ Pattern-heavy and recurring. The skill is knowing what each log source records a
 which combinations tell a story. Windows speaks in **EventCodes**; Linux speaks in
 **log-file text**. Drill both — an MSSP box is a mix of both.
 
-### Side A — Windows Event Logs (JAMES-VM)
+### Side A Windows Event Logs (JAMES-VM)
 
 **Key EventCodes to know cold:**
 - 4625 failed logon / 4624 successful logon (+ logon type)
@@ -154,7 +154,7 @@ which combinations tell a story. Windows speaks in **EventCodes**; Linux speaks 
 **Success when:** you can narrate an EventCode sequence as a story ("network logon →
 new service → privilege grant = suspicious") without a lookup.
 
-### Side B — Linux Log Analysis (Ubuntu / wazuh-manager)
+### Side B Linux Log Analysis (Ubuntu / wazuh-manager)
 
 Linux security-relevant events live in text log files, not EventCodes. Know the files
 and the lines:
@@ -166,7 +166,7 @@ and the lines:
 | `/var/log/audit/audit.log` | auditd (if enabled) | syscall/file-access events |
 | `.bash_history` | Command history | what a user actually typed |
 
-**Verified working search (Jul 12 2026)** — confirmed to capture sudo escalation with
+**Verified working search (Jul 12 2026)** confirmed to capture sudo escalation with
 the exact command, cron, and new-user activity in `sourcetype=linux_secure`:
 ```spl
 index=main host=wazuh-manager sourcetype=linux_secure ("sudo" OR "useradd" OR "session opened")
@@ -178,7 +178,7 @@ escalation with the exact command captured), `CRON session opened for user root`
 
 **Workflow:**
 1. Narrow: `index=main host=wazuh-manager sourcetype=linux_secure` + time window.
-2. Aggregate: `stats count by user, src_ip` on auth events (add a `rex` for fields —
+2. Aggregate: `stats count by user, src_ip` on auth events (add a `rex` for fields
    same build quirk as Monday).
 3. Watch for privilege escalation: `sudo` to root (the `COMMAND=` line shows exactly
    what ran), `session opened for user root`, new user creation (`useradd`), unexpected
@@ -219,7 +219,7 @@ it's malicious, plus name the host to isolate.
 
 ## Friday — Threat Hunting (proactive; multi-technique)
 
-Not reactive alert triage — a hypothesis-driven hunt. Different loop, worth its own
+Not reactive alert triage a hypothesis-driven hunt. Different loop, worth its own
 rep because it builds the "find it before it alerts" instinct.
 
 **Workflow:**
@@ -248,7 +248,7 @@ sitting. This is what a practical interview looks like.
 
 ## How to run the rotation
 
-- **One workflow per day.** Consistency beats intensity — 30 focused minutes daily
+- **One workflow per day.** Consistency beats intensity 30 focused minutes daily
   beats a five-hour weekend cram.
 - **Log every session** (date / data / time / verdict / criterion met). The log is
   both your progress tracker and a portfolio artifact ("here's how I trained").
