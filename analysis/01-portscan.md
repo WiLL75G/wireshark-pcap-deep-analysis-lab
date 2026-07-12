@@ -53,7 +53,7 @@ exactly, determined from raw packets with no scanner output.
 ```
 tcp.flags.syn == 1 && tcp.flags.ack == 0 && ip.src == 192.168.64.15
 ```
-2,122 SYNs from the attacker — more than 1,000 because nmap retransmits to ports that
+2,122 SYNs from the attacker more than 1,000 because nmap retransmits to ports that
 stay silent. (Raw SYN count is not the same as port count, due to retransmission.)
 
 **Unique ports swept the detection number:**
